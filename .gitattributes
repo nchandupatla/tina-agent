@@ -1,0 +1,4 @@
+# Keep shell scripts and JS runnable on every OS: always LF line endings.
+* text=auto eol=lf
+*.png binary
+*.svg text eol=lf
