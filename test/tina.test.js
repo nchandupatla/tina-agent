@@ -15,7 +15,7 @@ const requests = [];
 const server = createServer(async (req, res) => {
   let body = '';
   for await (const chunk of req) body += chunk;
-  requests.push(JSON.parse(body));
+  requests.push({ ...JSON.parse(body), headers: req.headers });
   const next = replies.shift() ?? say('(no more scripted replies)');
   res.writeHead(next.status ?? 200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(next.body ?? next));
@@ -50,6 +50,14 @@ describe('agent loop', () => {
     assert.equal(requests[0].tools[0].function.name, 'bash');
     assert.equal(requests[0].model, 'fake/model');
     assert.deepEqual(requests[0].cache_control, { type: 'ephemeral' });
+    assert.match(requests[0].session_id, /^tina-/);
+  });
+
+  test('identifies itself to OpenRouter', async () => {
+    replies = [say('hi')];
+    await agent(fresh(), { model, run: neverRun });
+    assert.equal(requests[0].headers['x-title'], 'TINA');
+    assert.equal(requests[0].headers['http-referer'], 'https://github.com/nchandupatla/tina-agent');
   });
 
   test('runs the requested command and feeds the output back', async () => {
@@ -102,6 +110,7 @@ describe('agent loop', () => {
     await agent(fresh(), { model, run: async () => '[exit code: 0]', log });
     const lines = readFileSync(log, 'utf8').trim().split('\n').map((line) => JSON.parse(line));
     assert.deepEqual(lines.map((m) => m.role), ['assistant', 'tool', 'assistant']);
+    assert.ok(lines.every((m) => !Number.isNaN(Date.parse(m.at))), 'every line has a timestamp');
   });
 
   test('emits events in order for the UI', async () => {

@@ -234,7 +234,7 @@ try {
 }
 
 let messages = [{ role: 'system', content: SYSTEM }];
-appendFileSync(log, JSON.stringify(messages[0]) + '\n');
+appendFileSync(log, JSON.stringify({ at: new Date().toISOString(), ...messages[0] }) + '\n');
 
 function bye() {
   stopSpin();
@@ -247,7 +247,7 @@ async function runTask(prompt) {
   task = { step: 0, errors: 0, lastFailed: false, started: Date.now(), finished: false };
   const message = { role: 'user', content: prompt };
   messages.push(message);
-  appendFileSync(log, JSON.stringify(message) + '\n');
+  appendFileSync(log, JSON.stringify({ at: new Date().toISOString(), ...message }) + '\n');
   try {
     await agent(messages, { model, run, on, maxSteps, log });
   } catch (err) {
@@ -276,7 +276,7 @@ function banner() {
   const row = (key, value) => '   ' + c.dim(key.padEnd(9)) + value;
   console.log(box([
     pad(mascot[0], 17),
-    spread(pad(mascot[1], 17) + gradient('T I N A'), c.dim('v0.1'), inner),
+    spread(pad(mascot[1], 17) + gradient('T I N A'), c.dim('v0.1.1'), inner),
     pad(mascot[2], 17) + c.soft('Your Tiny AI Coding Agent'),
     '',
     row('brain', c.text(model.id) + c.dim(` · via ${host}`)),

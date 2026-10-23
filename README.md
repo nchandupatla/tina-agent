@@ -127,8 +127,8 @@ interesting part.
 
 [`bench/`](bench) holds the exact challenge prompt and scripts from the video.
 `bench/race.sh haiku` runs both agents on the same model, through the same OpenRouter
-key, in the same sandbox image, with the same 20-minute limit. Cost is measured the
-same way for both: OpenRouter spend before and after each run.
+key, in the same sandbox image, with network access and the same 20-minute limit.
+Cost is measured the same way for both: OpenRouter spend before and after each run.
 
 ## Development
 

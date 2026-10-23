@@ -11,8 +11,9 @@ cp -R bench/template/. "$out/workspace/" && rm -f "$out/workspace/.gitkeep"
 
 echo "☁ TINA · $preset → $out"
 before="$(bench/spend.sh)"
-# 20-minute wall clock, same as Claude Code gets. perl's alarm works on macOS and Linux.
-perl -e 'alarm shift; exec @ARGV' 1200 \
+# Same rules as Claude Code: 20-minute wall clock, and network on (Claude Code needs it to reach the API).
+# perl's alarm works on macOS and Linux.
+TINA_NET=1 perl -e 'alarm shift; exec @ARGV' 1200 \
   node ui.js --model "$preset" --dir "$PWD/$out/workspace" --summary "$out/summary.json" "$(cat bench/PROMPT.md)" \
   | tee "$out/terminal.txt" || true
 sleep 5 # OpenRouter's spend counter lags a few seconds

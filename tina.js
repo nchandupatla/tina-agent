@@ -35,12 +35,14 @@ export const clip = (s, max = 10000) => s.length <= max ? s : `${s.slice(0, max 
 // request on the same provider so the cache stays warm. Turn off with TINA_CACHE=0.
 const CACHE = { cache_control: { type: 'ephemeral' }, session_id: `tina-${crypto.randomUUID()}` };
 
-// BRAIN: one HTTP call to any OpenAI-compatible API. Rate limits and server errors get retried.
+// BRAIN: one HTTP call to any OpenAI-compatible API. Rate limits, server errors and timeouts get retried.
 async function ask(model, messages) {
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(`${env('TINA_BASE_URL', 'https://openrouter.ai/api/v1')}/chat/completions`, {
-      method: 'POST', headers: { Authorization: `Bearer ${env('TINA_API_KEY')}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, messages, tools: TOOLS, max_tokens: 16000, ...(env('TINA_CACHE') !== '0' && CACHE) }) });
+      method: 'POST', signal: AbortSignal.timeout(300_000), headers: { Authorization: `Bearer ${env('TINA_API_KEY')}`,
+        'Content-Type': 'application/json', 'HTTP-Referer': 'https://github.com/nchandupatla/tina-agent', 'X-Title': 'TINA' },
+      body: JSON.stringify({ model, messages, tools: TOOLS, max_tokens: 16000, ...(env('TINA_CACHE') !== '0' && CACHE) }) })
+      .catch((err) => ({ status: 599, json: () => ({ error: { message: err.message } }) })); // timeouts and network errors retry too
     if ((res.status === 429 || res.status >= 500) && attempt < 4) { await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt)); continue; }
     const data = await res.json();
     if (!data.choices) throw new Error(data.error?.message ?? `HTTP ${res.status}`);
@@ -50,7 +52,7 @@ async function ask(model, messages) {
 
 // THE LOOP: ask → act → observe → repeat, until the model stops asking for tools.
 export async function agent(messages, { model = brain(), run, on = () => {}, maxSteps = +env('TINA_MAX_STEPS', 30), log } = {}) {
-  const remember = (message) => { messages.push(message); if (log) appendFileSync(log, JSON.stringify(message) + '\n'); };
+  const remember = (message) => { messages.push(message); if (log) appendFileSync(log, JSON.stringify({ at: new Date().toISOString(), ...message }) + '\n'); };
   for (let step = 1; step <= maxSteps; step++) {
     on('think', { step, maxSteps });
     const { choices, usage } = await ask(model.id, messages);

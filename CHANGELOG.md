@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- API calls time out after 5 minutes, and timeouts and network errors are retried like rate limits.
+- Transcripts record a timestamp for every message.
+- TINA identifies itself to OpenRouter (`X-Title: TINA`).
+- Bench: TINA gets network access in races, the same as Claude Code.
+- System prompt: clearer guidance when the network is off.
+
 ## 0.1.0 — unreleased
 
 First public version.
