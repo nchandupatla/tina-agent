@@ -1,7 +1,7 @@
 {
   "name": "tina-agent",
   "version": "0.1.0",
-  "description": "TINA — Your Tiny AI Coding Agent. A real AI coding agent in ~60 lines of JavaScript.",
+  "description": "TINA — Your Tiny AI Coding Agent. Tiny by name, sandboxed by default: a real AI coding agent in ~60 lines of JavaScript.",
   "keywords": ["ai-agent", "coding-agent", "llm", "tool-calling", "openrouter", "claude", "cli"],
   "homepage": "https://github.com/nchandupatla/tina-agent#readme",
   "repository": { "type": "git", "url": "git+https://github.com/nchandupatla/tina-agent.git" },

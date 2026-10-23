@@ -3,6 +3,7 @@
 <h1 align="center">TINA</h1>
 
 <p align="center"><b>Your Tiny AI Coding Agent</b><br>
+<i>Tiny by name. Sandboxed by default.</i><br>
 A real AI coding agent in ~60 lines of JavaScript. No framework, no dependencies.</p>
 
 <p align="center">
