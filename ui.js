@@ -34,6 +34,11 @@ const pad = (s, n) => s + ' '.repeat(Math.max(0, n - visible(s).length));
 const spread = (left, right, n = width()) => left + ' '.repeat(Math.max(1, n - visible(left).length - visible(right).length)) + right;
 const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 const tilde = (p) => p.replace(homedir(), '~');
+// Light markdown for model text: **bold**, `code`, and "- " bullets.
+const md = (line) => (tty ? line : line.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1'))
+  .replace(/^(\s*)- /, '$1• ')
+  .replace(/\*\*(.+?)\*\*/g, (_, t) => `\x1b[1m${t}\x1b[22m`)
+  .replace(/`([^`]+)`/g, (_, t) => c.sky(t));
 
 function wrap(text, n) {
   return text.split('\n').flatMap((para) => {
@@ -211,7 +216,7 @@ function finish(text) {
     total.cached ? cacheRate() : null,
     money(),
   ].filter(Boolean).join(' · ');
-  console.log('\n' + box([...wrap(text.trim(), width() - 4), '', c.text(stats), c.dim(cut(`brain ${model.id} · transcript ${tilde(log)}`, width() - 4))], c.pink('☀ done'), c.pink));
+  console.log('\n' + box([...wrap(text.trim(), width() - 4).map(md), '', c.text(stats), c.dim(cut(`brain ${model.id} · transcript ${tilde(log)}`, width() - 4))], c.pink('☀ done'), c.pink));
 }
 
 function on(event, value) {
@@ -230,7 +235,7 @@ function on(event, value) {
     else if (model.in != null) total.cost += ((usage.prompt_tokens ?? 0) * model.in + (usage.completion_tokens ?? 0) * model.out) / 1e6;
     else total.priced = false;
     if (reply.tool_calls?.length && reply.content?.trim()) {
-      wrap(reply.content.trim(), width() - 4).forEach((line, i) => console.log((i ? '  ' : c.sky('☁ ')) + c.text(line)));
+      wrap(reply.content.trim(), width() - 4).forEach((line, i) => console.log((i ? '  ' : c.sky('☁ ')) + md(line)));
     }
   }
   if (event === 'cmd') {
