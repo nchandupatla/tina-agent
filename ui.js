@@ -56,11 +56,53 @@ function box(lines, title = '', color = c.dim) {
 }
 
 // ---------- the mascot: Cursor Wink ----------
-const mascot = [
-  c.sky('   .-~~~~-.'),
-  c.sky(' .(  ') + c.text('●') + c.sky('   ') + c.violet('▮') + c.sky('  ).'),
-  c.sky('(') + c.pink('°') + c.sky('____') + c.text('‿') + c.sky('____') + c.pink('°') + c.sky(')'),
+// Pixel art drawn with half blocks (▀▄): each text row shows two pixel rows in true color.
+// c = cloud (sky → violet gradient), e = eye and smile, k = cheek, . = empty.
+const MASCOT = [
+  '........cccccc........',
+  '......cccccccccc......',
+  '..cccccccccccccccc....',
+  '.cccccccccccccccccccc.',
+  'cccccccccccccccccccccc',
+  'cccccccccccccceecccccc',
+  'cccccccceecccceecccccc',
+  'cccccccceecccceecccccc',
+  'ccccckkcccccccccckkccc',
+  'ccccckkcceccccecckkccc',
+  'cccccccccceeeecccccccc',
+  '.cccccccccccccccccccc.',
+  '..cccccccccccccccccc..',
+  '....cccccccccccccc....',
 ];
+
+function pixelArt(rows) {
+  const [from, to] = [rgb(PALETTE.sky), rgb(PALETTE.violet)];
+  const color = (ch, x) => {
+    if (ch === 'e') return [11, 16, 32];
+    if (ch === 'k') return rgb(PALETTE.pink);
+    if (ch === 'c') return from.map((v, j) => Math.round(v + ((to[j] - v) * x) / (rows[0].length - 1)));
+    return null;
+  };
+  const lines = [];
+  for (let y = 0; y < rows.length; y += 2) {
+    let line = '';
+    for (let x = 0; x < rows[y].length; x++) {
+      const top = color(rows[y][x], x);
+      const bottom = color(rows[y + 1]?.[x] ?? '.', x);
+      if (top && bottom) line += `\x1b[38;2;${top.join(';')};48;2;${bottom.join(';')}m▀`;
+      else if (top) line += `\x1b[38;2;${top.join(';')}m▀`;
+      else if (bottom) line += `\x1b[38;2;${bottom.join(';')}m▄`;
+      else line += ' ';
+      line += '\x1b[0m';
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+
+const mascot = tty
+  ? pixelArt(MASCOT)
+  : ['   .-~~~~-.', ' .(  ●   ▮  ).', '(°____‿____°)'];
 
 // ---------- session state ----------
 const { values: opts, positionals } = parseArgs({
@@ -274,10 +316,10 @@ if (positionals.length) {
 function banner() {
   const inner = width() - 4;
   const row = (key, value) => '   ' + c.dim(key.padEnd(9)) + value;
+  const beside = ['', '', gradient('T I N A'), c.soft('Your Tiny AI Coding Agent'), c.dim('Tiny by name. Sandboxed by default.'), '', ''];
+  const art = mascot.map((line, i) => (i === 0 ? spread(' ' + pad(line, 24) + (beside[i] ?? ''), c.dim('v0.1.1'), inner) : ' ' + pad(line, 24) + (beside[i] ?? '')));
   console.log(box([
-    pad(mascot[0], 17),
-    spread(pad(mascot[1], 17) + gradient('T I N A'), c.dim('v0.1.1'), inner),
-    pad(mascot[2], 17) + c.soft('Your Tiny AI Coding Agent'),
+    ...art,
     '',
     row('brain', c.text(model.id) + c.dim(` · via ${host}`)),
     row('hands', c.text(`sandbox · ${net ? c.red('network ON') : 'no network'} · ${tilde(dir)}`)),
