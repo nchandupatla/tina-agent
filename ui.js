@@ -44,7 +44,7 @@ function wrap(text, n) {
   return text.split('\n').flatMap((para) => {
     const lines = [''];
     for (const word of para.split(' ')) {
-      if ((lines.at(-1) + ' ' + word).trim().length > n && lines.at(-1)) lines.push('');
+      if (visible(lines.at(-1) + ' ' + word).trim().length > n && lines.at(-1)) lines.push('');
       lines[lines.length - 1] = (lines.at(-1) + ' ' + word).trimStart();
     }
     return lines;
@@ -216,7 +216,7 @@ function finish(text) {
     total.cached ? cacheRate() : null,
     money(),
   ].filter(Boolean).join(' · ');
-  console.log('\n' + box([...wrap(text.trim(), width() - 4).map(md), '', c.text(stats), c.dim(cut(`brain ${model.id} · transcript ${tilde(log)}`, width() - 4))], c.pink('☀ done'), c.pink));
+  console.log('\n' + box([...wrap(text.trim().split('\n').map(md).join('\n'), width() - 4), '', c.text(stats), c.dim(cut(`brain ${model.id} · transcript ${tilde(log)}`, width() - 4))], c.pink('☀ done'), c.pink));
 }
 
 function on(event, value) {
@@ -235,7 +235,7 @@ function on(event, value) {
     else if (model.in != null) total.cost += ((usage.prompt_tokens ?? 0) * model.in + (usage.completion_tokens ?? 0) * model.out) / 1e6;
     else total.priced = false;
     if (reply.tool_calls?.length && reply.content?.trim()) {
-      wrap(reply.content.trim(), width() - 4).forEach((line, i) => console.log((i ? '  ' : c.sky('☁ ')) + md(line)));
+      wrap(reply.content.trim().split('\n').map(md).join('\n'), width() - 4).forEach((line, i) => console.log((i ? '  ' : c.sky('☁ ')) + line));
     }
   }
   if (event === 'cmd') {
