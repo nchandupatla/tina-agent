@@ -8,4 +8,5 @@ RUN apt-get update \
 
 ENV HOME=/tmp
 WORKDIR /workspace
-CMD ["sleep", "infinity"]
+# A sandbox that somehow outlives TINA shuts itself down after 6 hours (and --rm removes it).
+CMD ["sleep", "21600"]

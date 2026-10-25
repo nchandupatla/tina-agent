@@ -289,6 +289,8 @@ function bye() {
   process.exit(130);
 }
 process.on('SIGINT', bye);
+// Closing the terminal or killing TINA must also remove the sandbox container.
+for (const signal of ['SIGTERM', 'SIGHUP']) process.on(signal, () => process.exit(129));
 
 async function runTask(prompt) {
   task = { step: 0, errors: 0, lastFailed: false, started: Date.now(), finished: false };
