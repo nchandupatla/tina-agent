@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Security: TINA refused only the exact home folder and its own folder. Started from a parent
+  folder such as `~/workspace`, it mounted TINA's own folder, so the model could read the API
+  key in its `.env`. `sandbox()` now refuses any folder that is or contains your home folder or
+  TINA's own folder. Paths are compared after resolving them for real, so trailing slashes,
+  symlinks and other letter cases (macOS) can't get around the check. Tests cover each case.
+
 ## 0.1.1
 
 - API calls time out after 5 minutes, and timeouts and network errors are retried like rate limits.

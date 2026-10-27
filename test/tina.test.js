@@ -2,10 +2,11 @@
 // The sandbox tests need Docker and are skipped without it.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, symlinkSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { homedir, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { SYSTEM, agent, clip, sandbox } from '../tina.js';
 
@@ -179,5 +180,41 @@ describe('sandbox', { skip: !docker && 'Docker not available' }, () => {
 
   test('refuses to mount the home folder', () => {
     assert.throws(() => sandbox(homedir()), /home folder/);
+  });
+});
+
+// ---------- folders TINA must never mount (checked before Docker starts) ----------
+describe('folder guard', () => {
+  const tinaFolder = dirname(fileURLToPath(new URL('../tina.js', import.meta.url)));
+
+  test("refuses TINA's own folder, where the .env lives", () => {
+    assert.throws(() => sandbox(tinaFolder), /will not mount/);
+  });
+
+  test("refuses a parent of TINA's own folder, which would expose its .env", () => {
+    assert.throws(() => sandbox(dirname(tinaFolder)), /will not mount/);
+  });
+
+  test('refuses a parent of the home folder', () => {
+    assert.throws(() => sandbox(dirname(homedir())), /will not mount/);
+  });
+
+  test('refuses the home folder written with a trailing slash', () => {
+    assert.throws(() => sandbox(`${homedir()}/`), /will not mount/);
+  });
+
+  test('refuses the root folder', () => {
+    assert.throws(() => sandbox('/'), /will not mount/);
+  });
+
+  test("refuses a symlink to a parent of TINA's own folder", () => {
+    const link = join(mkdtempSync(join(tmpdir(), 'tina-link-')), 'workspace');
+    symlinkSync(dirname(tinaFolder), link);
+    assert.throws(() => sandbox(link), /will not mount/);
+  });
+
+  const shouted = dirname(tinaFolder).toUpperCase();
+  test("refuses a parent of TINA's own folder written in other letter case", { skip: !existsSync(shouted) && 'case-sensitive file system' }, () => {
+    assert.throws(() => sandbox(shouted), /will not mount/);
   });
 });
