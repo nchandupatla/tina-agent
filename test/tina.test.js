@@ -2,7 +2,7 @@
 // The sandbox tests need Docker and are skipped without it.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, symlinkSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -205,5 +205,16 @@ describe('folder guard', () => {
 
   test('refuses the root folder', () => {
     assert.throws(() => sandbox('/'), /will not mount/);
+  });
+
+  test("refuses a symlink to a parent of TINA's own folder", () => {
+    const link = join(mkdtempSync(join(tmpdir(), 'tina-link-')), 'workspace');
+    symlinkSync(dirname(tinaFolder), link);
+    assert.throws(() => sandbox(link), /will not mount/);
+  });
+
+  const shouted = dirname(tinaFolder).toUpperCase();
+  test("refuses a parent of TINA's own folder written in other letter case", { skip: !existsSync(shouted) && 'case-sensitive file system' }, () => {
+    assert.throws(() => sandbox(shouted), /will not mount/);
   });
 });
