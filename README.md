@@ -48,7 +48,8 @@ tina "build a tiny todo app in index.html and make sure it works"
 ```
 
 The first run builds the sandbox image, which takes about 30 seconds. TINA works in
-the folder you start it from. It won't start in your home folder or in its own folder.
+the folder you start it from. It won't start in your home folder, in its own folder, or in
+any folder that contains them.
 
 ## Using it
 

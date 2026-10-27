@@ -18,8 +18,9 @@ const TOOLS = [{ type: 'function', function: {
   parameters: { type: 'object', properties: { command: { type: 'string' } }, required: ['command'] } } }];
 
 // HANDS: a throwaway Docker container. Only `dir` is mounted, and the API key never goes in.
+// Never mount a folder that is or contains your home folder or TINA's own folder (its .env holds the key).
 export function sandbox(dir = process.cwd(), net = env('TINA_NET') === '1') {
-  if (dir === process.env.HOME || dir === '/') throw new Error('TINA will not mount your home folder. cd into a project folder.');
+  if (['/', process.env.HOME, here].some((p) => `${p}/`.startsWith(`${dir.replace(/\/+$/, '')}/`))) throw new Error(`TINA will not mount ${dir}: it is or contains your home folder or TINA's own folder. cd into a project folder.`);
   const box = execFileSync('docker', ['run', '-d', '--rm', ...(net ? [] : ['--network', 'none']), '--read-only', '--tmpfs', '/tmp',
     '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--memory', '1g', '--pids-limit', '256',
     '--user', `${process.getuid()}:${process.getgid()}`, '-v', `${dir}:/workspace`, 'tina-sandbox']).toString().trim();
