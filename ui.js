@@ -270,7 +270,6 @@ try {
   }
 }
 
-if (dir === resolve(here)) bail("Don't run TINA inside its own folder: your .env (API key) would be visible to the model. cd into a project folder.");
 if (existsSync(resolve(dir, '.env'))) console.log(c.red('! this folder has a .env file. TINA can read it, so any secrets in it are visible to the model.'));
 
 let run;

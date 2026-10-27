@@ -180,4 +180,12 @@ describe('sandbox', { skip: !docker && 'Docker not available' }, () => {
   test('refuses to mount the home folder', () => {
     assert.throws(() => sandbox(homedir()), /home folder/);
   });
+
+  test('refuses the home folder written with a trailing slash', () => {
+    assert.throws(() => sandbox(`${homedir()}/`), /home folder/);
+  });
+
+  test("refuses to mount TINA's own folder, where the .env lives", () => {
+    assert.throws(() => sandbox(new URL('..', import.meta.url).pathname), /own folder/);
+  });
 });
