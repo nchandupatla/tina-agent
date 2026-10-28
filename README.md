@@ -117,6 +117,10 @@ A container is not a perfect security boundary, and anything inside your project
 folder, including `.env` files, is visible to the model. Read [SECURITY.md](SECURITY.md)
 and don't point TINA at anything you can't afford to lose.
 
+Pull requests to TINA are also checked against the rules in [LESSONS.md](LESSONS.md)
+by [tina-reviewer](https://github.com/nchandupatla/tina-reviewer), a reviewer built
+with Cursor's Agent SDK. It's a second reviewer, not a guarantee.
+
 ## What TINA is not
 
 TINA is a small, readable agent for learning and experimenting. It has one tool, no
