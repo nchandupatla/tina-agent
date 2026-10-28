@@ -17,14 +17,14 @@ const TOOLS = [{ type: 'function', function: {
   name: 'bash', description: 'Run a bash command in /workspace and return its output and exit code.',
   parameters: { type: 'object', properties: { command: { type: 'string' } }, required: ['command'] } } }];
 
-// HANDS: a throwaway Docker container. Only `dir` is mounted, and the API key never goes in.
+// HANDS: a throwaway Docker container. Only `dir` is writable, and the API key never goes in.
 // Never mount a folder that is or contains your home folder or TINA's own folder (its .env holds the key).
 // Real paths are compared, so symlinks and other letter cases (macOS) can't sneak past.
 export function sandbox(dir = process.cwd(), net = env('TINA_NET') === '1') {
   if (['/', process.env.HOME ?? '/', here].some((p) => `${realpathSync.native(p)}/`.replace(/\/+$/, '/').startsWith(`${realpathSync.native(dir)}/`.replace(/\/+$/, '/')))) throw new Error(`TINA will not mount ${dir}: it is or contains your home folder or TINA's own folder. cd into a project folder.`);
   const box = execFileSync('docker', ['run', '-d', '--rm', ...(net ? [] : ['--network', 'none']), '--read-only', '--tmpfs', '/tmp',
     '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--memory', '1g', '--pids-limit', '256',
-    '--user', `${process.getuid()}:${process.getgid()}`, '-v', `${dir}:/workspace`, 'tina-sandbox']).toString().trim();
+    '--user', `${process.getuid()}:${process.getgid()}`, '-v', `${dir}:/workspace`, '-v', `${here}:/tina:ro`, 'tina-sandbox']).toString().trim();
   process.on('exit', () => execFileSync('docker', ['rm', '-f', box], { stdio: 'ignore' }));
   const secs = env('TINA_CMD_TIMEOUT', '60');
   return (command) => new Promise((done) => execFile('docker', ['exec', box, 'timeout', '-k', '5', secs, 'bash', '-c', command],
