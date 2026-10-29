@@ -7,6 +7,13 @@
 A real AI coding agent in ~60 lines of JavaScript. No framework, no dependencies.</p>
 
 <p align="center">
+  <a href="https://www.youtube.com/watch?v=4yqCXWG0VBc"><img src="https://img.youtube.com/vi/4yqCXWG0VBc/maxresdefault.jpg" width="640" alt="Watch TINA on YouTube: I Built a 62-Line AI Coding Agent. Then I Tested Claude Code."></a>
+</p>
+
+<p align="center">▶ <b>Watch the video:</b> <a href="https://www.youtube.com/watch?v=4yqCXWG0VBc">I Built a 62-Line AI Coding Agent. Then I Tested Claude Code.</a><br>
+More from <a href="https://www.youtube.com/@naveen_chandupatla">Naveen on YouTube</a>.</p>
+
+<p align="center">
   <a href="https://github.com/nchandupatla/tina-agent/actions/workflows/ci.yml"><img src="https://github.com/nchandupatla/tina-agent/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-7DD3FC" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520.12-A78BFA" alt="Node 20.12 or newer">
